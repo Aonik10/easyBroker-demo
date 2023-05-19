@@ -24,20 +24,23 @@ def test_page_output(input_value, expected):
 
 
 @pytest.mark.parametrize(
-    "input_value, expected",
+    "input_page, input_limit, expected",
     [
-        (1, 1),
-        (2.1, 2),
-        (4.9999, 4),
-        (5.000001, 5),
-        (100, 50),
-        (0, "Bad request"),
-        (-87, "Bad request")
+        (1, 1, 1),
+        (3, 2.1, 2),
+        (6, 4.9999, 4),
+        (10, 5.000001, 5),
+        (15, 100, 50),
+        (18, 50, 34),
+        (18, 25, 25),
+        (900, 1, 0),
+        (2, 0, "Bad request"),
+        (1, -87, "Bad request")
     ]
 )
-def test_limit_length_output(input_value, expected):
+def test_limit_length_output(input_page, input_limit, expected):
     app = Properties(api_key=API_KEY)
-    listed_properties = app.list_all_properties(limit=input_value)
+    listed_properties = app.list_all_properties(page=input_page, limit=input_limit)
     if "content" in listed_properties.keys():
         output = len(listed_properties["content"])
     elif "error" in listed_properties.keys():
@@ -45,7 +48,6 @@ def test_limit_length_output(input_value, expected):
     else:
         output = listed_properties
     assert output == expected
-
 
 @pytest.mark.parametrize(
     "input_value, expected",
