@@ -54,16 +54,27 @@ def test_limit_length_output(input_page, input_limit, expected):
     [
         ("2023-01-01", True),
         ("2022-12-31", True),
-        ("3000-01-01", False),
         ("1500-01-01", True),
     ]
 )
-def test_update_output(input_value, expected):
+def test_updated_after_output_true(input_value, expected):
     app = Properties(api_key=API_KEY)
     options = app.create_options(updated_after=input_value)
     prop = app.list_all_properties(page=1, limit=1, options=options)["content"]
-    if len(prop) == 0:
-        return False
     updated_after_dt = datetime.strptime(input_value, "%Y-%m-%d")
     prop_updated_at = datetime.strptime(prop[0]['updated_at'].split("T")[0], "%Y-%m-%d")
     assert (prop_updated_at >= updated_after_dt) == expected
+
+@pytest.mark.parametrize(
+    "input_value, expected",
+    [
+        ("3000-01-01", 0),
+        ("2500-12-31", 0),
+        ("2025-05-16", 0),
+    ]
+)
+def test_updated_after_output_false(input_value, expected):
+    app = Properties(api_key=API_KEY)
+    options = app.create_options(updated_after=input_value)
+    prop = app.list_all_properties(page=1, limit=1, options=options)["content"]
+    assert len(prop) == expected
